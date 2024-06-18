@@ -1,73 +1,76 @@
 #ifndef HEADER_H
 #define HEADER_H
 
+#include <iostream>
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
+#include <sstream>
+#include <iterator> // Include this for std::istream_iterator
 
 
-class Recognize_K {
+class DFATokenRecognizer {
 public:
-    Recognize_K();
-    bool recognize(const std::string& word);
+    DFATokenRecognizer() {
+        accepting_states = {
+            {"aku", "S"}, {"kamu", "S"}, {"dia", "S"}, {"kami", "S"}, {"mereka", "S"},
+            {"makan", "P"}, {"minum", "P"}, {"tidur", "P"}, {"bermain", "P"}, {"bekerja", "P"},
+            {"nasi", "O"}, {"air", "O"}, {"roti", "O"}, {"bola", "O"}, {"buku", "O"},
+            {"di-rumah", "K"}, {"di-sekolah", "K"}, {"di-kantor", "K"}, {"pada-malam-hari", "K"}, {"dengan-cepat", "K"}
+        };
+    }
+
+    std::string recognize(const std::string& token) {
+        auto it = accepting_states.find(token);
+        if (it != accepting_states.end()) {
+            return it->second;
+        }
+        return "";
+    }
+
 private:
-    std::vector<std::unordered_map<char, int>> transitions;
-    int final_state;
+    std::unordered_map<std::string, std::string> accepting_states;
 };
 
-class Recognize_O {
+class PDAHTMLParser {
 public:
-    Recognize_O();
-    bool recognize(const std::string& word);
+    PDAHTMLParser() : token_recognizer() {}
+
+    std::pair<std::string, std::vector<std::string>> parse(const std::string& sentence) {
+        std::istringstream iss(sentence);
+        std::vector<std::string> tokens{std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
+        std::vector<std::string> structure;
+
+        for (const auto& token : tokens) {
+            std::string token_type = token_recognizer.recognize(token);
+            if (token_type.empty()) {
+                return {"Rejected: " + token, structure};
+            }
+            structure.push_back(token_type);
+        }
+
+        std::vector<std::vector<std::string>> valid_structures = {
+            {"S", "P", "O", "K"},
+            {"S", "P", "K"},
+            {"S", "P", "O"},
+            {"S", "P"}
+        };
+
+        for (const auto& valid_structure : valid_structures) {
+            if (structure == valid_structure) {
+                return {"Accepted", structure};
+            }
+        }
+        return {"Rejected", structure};
+    }
+
 private:
-    std::vector<std::unordered_map<char, int>> transitions;
-    int final_state;
+    DFATokenRecognizer token_recognizer;
 };
 
-class Recognizer_P {
-public:
-    Recognizer_P();
-    bool recognize(const std::string& word);
-    bool is_predikat(const std::string& word);
-private:
-    std::vector<std::unordered_map<char, int>> transitions;
-    int final_state;
-};
+void showMenu();
+void processInputSentence(PDAHTMLParser& parser);
+void showAboutUs();
 
-class Recognizer_S {
-public:
-    Recognizer_S();
-    bool recognize(const std::string& word);
-    bool is_subject(const std::string& word);
-private:
-    std::vector<std::unordered_map<char, int>> transitions;
-    int final_state;
-};
-
-class TokenRecognizer {
-public:
-    std::vector<std::string> set_token(const std::string& sentence);
-};
-
-class Stack {
-public:
-    void push(const std::string& item);
-    void pop();
-    std::string top();
-    bool is_empty();
-private:
-    std::vector<std::string> stack;
-};
-
-class Validation {
-public:
-    Validation(Stack& stack);
-    void transition(const std::string& token);
-    void parse(const std::vector<std::string>& tokens);
-    bool validate(const std::vector<std::string>& tokens);
-private:
-    Stack& stack;
-    std::string current_state;
-};
 
 #endif // HEADER_H
