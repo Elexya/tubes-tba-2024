@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <iterator> // Include this for std::istream_iterator
+#include <iomanip>
 
 
 class DFATokenRecognizer {
@@ -71,6 +72,7 @@ private:
 void showMenu();
 void processInputSentence(PDAHTMLParser& parser);
 void showAboutUs();
+void printAccepted();
 
 
 #endif // HEADER_H
