@@ -44,4 +44,30 @@ private:
     int final_state;
 };
 
+class TokenRecognizer {
+public:
+    std::vector<std::string> set_token(const std::string& sentence);
+};
+
+class Stack {
+public:
+    void push(const std::string& item);
+    void pop();
+    std::string top();
+    bool is_empty();
+private:
+    std::vector<std::string> stack;
+};
+
+class Validation {
+public:
+    Validation(Stack& stack);
+    void transition(const std::string& token);
+    void parse(const std::vector<std::string>& tokens);
+    bool validate(const std::vector<std::string>& tokens);
+private:
+    Stack& stack;
+    std::string current_state;
+};
+
 #endif // HEADER_H
